@@ -32,7 +32,7 @@
 				v-bind:class="[item.showDetail ? 'less': 'more', item.type, 'list-item']"
 				v-on:click="toggleDetails(item)"
 				>
-					<h3>{{ incrementIndexKey(index) }}. {{ capitalizeFirstLetter(item.title) }}</h3>
+					<h3>{{ capitalizeFirstLetter(item.title) }}</h3>
 					<p v-show="item.showDetail">{{ capitalizeFirstLetter(item.summary) }}</p>
 					<div class="close_btn" v-on:click="removeItem(item)">X</div>
 				</div>
