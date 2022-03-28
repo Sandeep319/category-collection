@@ -83,14 +83,15 @@ const app = new Vue({
 		newTitle: '',
 		newSummary: '',
 		newType: '',
+		uniqueItemList: '',
 		error: false
 	},
 	methods: {
 		toggleDetails: function(media){
 			media.showDetail = !media.showDetail;
 		},
-		changeType: function(){
-			this.type = event.target.value;
+		changeType: function(e){
+			this.type = e.target.value;
 		},
 		capitalizeFirstLetter(string) {
 			return string.charAt(0).toUpperCase() + string.slice(1);
@@ -113,9 +114,6 @@ const app = new Vue({
 		},
 		removeItem: function(item){
 			this.itemList.splice(this.itemList.indexOf(item), 1);
-		},
-		incrementIndexKey: function(index){
-			return index + 1;
 		}
 	},
 	computed: {
@@ -126,7 +124,8 @@ const app = new Vue({
 					types.push(item.type);
 				}
 			});
-			return types;
+			types.sort();
+			this.uniqueItemList = types;
 		}
 	}
 });

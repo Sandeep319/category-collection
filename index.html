@@ -23,16 +23,15 @@
 				<div class="">
 					<select v-on:change="changeType">
 						<option value="">Select</option>
-						<option v-for="uniqueItem in uniqueItems" v-bind:value="uniqueItem">{{ capitalizeFirstLetter(uniqueItem) }}</option>
+						<option v-for="uniqueItem in uniqueItemList" v-bind:value="uniqueItem">{{ capitalizeFirstLetter(uniqueItem) }}</option>
 					</select>
 				</div>
 				<div
 				v-for="(item, index) in itemList" 
 				v-show="type === '' || type === item.type"
 				v-bind:class="[item.showDetail ? 'less': 'more', item.type, 'list-item']"
-				v-on:click="toggleDetails(item)"
 				>
-					<h3>{{ capitalizeFirstLetter(item.title) }}</h3>
+					<h3 v-on:click="toggleDetails(item)">{{ capitalizeFirstLetter(item.title) }}</h3>
 					<p v-show="item.showDetail">{{ capitalizeFirstLetter(item.summary) }}</p>
 					<div class="close_btn" v-on:click="removeItem(item)">X</div>
 				</div>
