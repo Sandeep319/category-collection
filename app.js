@@ -77,7 +77,7 @@ const app = new Vue({
 	el: '#items-list',
 	data: {
 		title: 'Library',
-		summary: 'Ultimate collection of everything',
+		summary: 'Collection of different categories',
 		itemList: items,
 		type: '',
 		newTitle: '',
