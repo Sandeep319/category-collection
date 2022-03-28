@@ -83,7 +83,6 @@ const app = new Vue({
 		newTitle: '',
 		newSummary: '',
 		newType: '',
-		uniqueItemList: '',
 		error: false
 	},
 	methods: {
@@ -114,7 +113,7 @@ const app = new Vue({
 		},
 		removeItem: function(item){
 			this.itemList.splice(this.itemList.indexOf(item), 1);
-		}
+		}	
 	},
 	computed: {
 		uniqueItems: function(){
@@ -125,7 +124,7 @@ const app = new Vue({
 				}
 			});
 			types.sort();
-			this.uniqueItemList = types;
+			return types;
 		}
 	}
 });

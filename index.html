@@ -23,7 +23,7 @@
 				<div class="">
 					<select v-on:change="changeType">
 						<option value="">Select</option>
-						<option v-for="uniqueItem in uniqueItemList" v-bind:value="uniqueItem">{{ capitalizeFirstLetter(uniqueItem) }}</option>
+						<option v-for="uniqueItem in uniqueItems" v-bind:value="uniqueItem">{{ capitalizeFirstLetter(uniqueItem) }}</option>
 					</select>
 				</div>
 				<div
