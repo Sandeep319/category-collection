@@ -4,7 +4,7 @@
 		<title>Vue</title>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 		<link rel="stylesheet" href="styles.css">
@@ -12,60 +12,33 @@
 	</head>
 	<body>
 		<div id="main_wrapper">
-			<div id="add_collection" class="modal fade" role="dialog">
+			<div id="collection_modal" class="modal fade" role="dialog">
 			  <div class="modal-dialog modal-lg">
 				<div class="modal-content">
 				  <div class="modal-header">
-					<h4 class="modal-title">Add Collection</h4>
+					<h4 class="modal-title capitalize_text">{{ activeModule }} Item</h4>
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
 				  </div>
 				  <div class="modal-body">
 					<form method="post" action="" @submit.prevent="preventSubmit">
 						<div class="form-group">
-							<input class="form-control" type="text" name="title" v-model="newTitle" placeholder="Title">
+							<input class="form-control" type="text" name="title" v-model="currentTitle" placeholder="Title*">
 						</div>
 						<div class="form-group">
-							<textarea class="form-control" name="description" v-model="newDescription" placeholder="Description"></textarea>
+							<textarea class="form-control" name="description" v-model="currentDescription" placeholder="Description*"></textarea>
 						</div>
 						<div class="form-group">
-							<input class="form-control capitalize_text" name="type" v-model="newType" placeholder="Type">
+							<input class="form-control capitalize_text" type="text" name="type" v-model="currentType" placeholder="Type*">
 							<ul class="collections_list">
-								<li class="capitalize_text" v-for="(uniqueItem, index) in uniqueItems" v-on:click="newType = uniqueItem">{{ uniqueItem }}</li>
+								<li class="capitalize_text" v-for="(uniqueItem, index) in uniqueItems" v-on:click="currentType = uniqueItem">{{ uniqueItem }}</li>
 							</ul>
+							<input class="form-control" type="hidden" name="type" v-model="currentID" placeholder="Type">
 						</div>
-						<div class="alert_message error" v-show="error">Oops... All fields are required.</div>
+						<div class="alert alert-success" v-show="(activeModule === 'add' || activeModule === 'edit') && error === false && notificationMsg != ''">{{ notificationMsg }}</div>
+						<div class="alert alert-danger" v-show="(activeModule === 'add' || activeModule === 'edit') && error === true && notificationMsg != ''">{{ notificationMsg }}</div>
 						<div>
-							<button class="btn btn-primary btn_control" v-on:click="addCollection">Add</button>
-						</div>
-					</form>
-				  </div>
-				</div>
-			  </div>
-			</div>
-			<div id="edit_collection" class="modal fade" role="dialog">
-			  <div class="modal-dialog modal-lg">
-				<div class="modal-content">
-				  <div class="modal-header">
-					<h4 class="modal-title">Edit Collection</h4>
-					<button type="button" class="close" data-dismiss="modal">&times;</button>
-				  </div>
-				  <div class="modal-body">
-					<form method="post" action="" @submit.prevent="preventSubmit">
-						<div class="form-group">
-							<input class="form-control" type="text" name="title" v-model="editTitle" placeholder="Title">
-						</div>
-						<div class="form-group">
-							<textarea class="form-control" name="description" v-model="editDescription" placeholder="Description"></textarea>
-						</div>
-						<div class="form-group">
-							<input class="form-control capitalize_text" type="text" name="type" v-model="editType" placeholder="Type">
-							<ul class="collections_list">
-								<li class="capitalize_text" v-for="(uniqueItem, index) in uniqueItems" v-on:click="editType = uniqueItem">{{ uniqueItem }}</li>
-							</ul>
-							<input class="form-control" type="hidden" name="type" v-model="editID" placeholder="Type">
-						</div>
-						<div>
-							<button class="btn btn-primary btn_control" v-on:click="editCollection">Update</button>
+							<button class="btn btn-primary btn_control" v-on:click="actionCollection(activeModule)" v-if="activeModule == 'add'">Add Item</button>
+							<button class="btn btn-primary btn_control" v-on:click="actionCollection(activeModule)" v-if="activeModule == 'edit'">Update Item</button>
 						</div>
 					</form>
 				  </div>
@@ -76,6 +49,7 @@
 				<div id="collection_items">
 					<h1>{{ title }}</h1>
 					<p>{{ summary }}</p>
+					<div class="alert alert-success" v-show="activeModule === 'delete' && notificationMsg != ''">{{ notificationMsg }}</div>
 					<div class="row">
 						<div class="col-md-6">
 							<select v-on:change="changeType" v-model="type" id="collection_selector">
@@ -84,7 +58,7 @@
 							</select>
 						</div>
 						<div class="col-md-6 right_align">
-							<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#add_collection"><i class="fa fa-plus"></i> Add Collection</button>
+							<button class="btn btn-primary" data-toggle="modal" data-target="#collection_modal" v-on:click="activeModule = 'add'; currentID = ''; currentTitle = ''; currentDescription = ''; currentType = ''; notificationMsg = ''; error = false"><i class="fa fa-plus"></i> Add Item</button>
 						</div>
 					</div>
 					<div class="row list-item"
@@ -92,13 +66,20 @@
 					v-show="type === '' || type === item.type"
 					v-bind:class="[item.type]"
 					>
-						<div class="col-md-9" v-bind:class="[item.showDetail ? 'less': 'more']" v-on:click="toggleDetails(item)">
+						<div class="item_bg_fix"></div>
+						<div class="item_bg_fix2"></div>
+						<div class="col-md-9 higher_zindex" v-bind:class="[item.showDetail ? 'less': 'more']" v-on:click="toggleDetails(item)">
 							<h4 class="collection_name"><i class="fa" v-bind:class="[item.showDetail ? 'fa-minus': 'fa-plus']"></i> {{ item.name }}</h4>
 							<p v-show="item.showDetail">{{ item.description }}</p>
 						</div>
-						<div class="col-md-3 collection_btns right_align">
-							<button class="btn btn-success" data-toggle="modal" data-target="#edit_collection" v-on:click="editID = item.id; editTitle = item.name; editDescription = item.description; editType = item.type"><i class="fa fa-edit"></i> Edit</button>
-							<button class="btn btn-danger" v-on:click="removeItem(item.id)"><i class="fa fa-trash"></i> Delete</button>
+						<div class="col-md-3 higher_zindex collection_btns right_align">
+							<button class="btn btn-success" data-toggle="modal" data-target="#collection_modal" v-on:click="activeModule = 'edit'; currentID = item.id; currentTitle = item.name; currentDescription = item.description; currentType = item.type; notificationMsg = ''; error = false"><i class="fa fa-edit"></i> Edit</button>
+							<button class="btn btn-danger" v-on:click="activeModule = 'delete'; currentID = item.id; notificationMsg = ''; error = false"><i class="fa fa-trash"></i> Delete</button>
+						</div>
+						<div class="col-md-12 higher_zindex delete_confirmation right_align" v-show="activeModule === 'delete' && currentID === item.id">
+							Are you sure to delete this item? 
+							<button class="btn btn-primary" v-on:click="activeModule = ''; currentID = '';"><i class="fa fa-close"></i> No</button>
+							<button class="btn btn-danger" v-on:click="removeItem(item.id)"><i class="fa fa-check"></i> Yes</button>
 						</div>
 					</div>
 				</div>
