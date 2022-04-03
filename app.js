@@ -7,14 +7,13 @@ const app = new Vue({
 		itemsBGs: '',
 		uniqueItems: '',
 		type: '',
-		newTitle: '',
-		newDescription: '',
-		editID: '',
-		editType: '',
-		editTitle: '',
-		editDescription: '',
-		newType: '',
-		error: false
+		activeModule: '',
+		currentID: '',
+		currentTitle: '',
+		currentDescription: '',
+		currentType: '',
+		error: false,
+		notificationMsg: ''
 	},
 	methods: {
 		preventSubmit(e) {
@@ -28,6 +27,7 @@ const app = new Vue({
 			this.type = e.target.value;
 		},
 		allCollections: function(){
+			//this.activeModule = '';
 			axios.post('ajax.php', {
 			    request: 'fetch'
 			})
@@ -41,58 +41,46 @@ const app = new Vue({
 						types.push(item.type);
 						const colName = item.type;
 						const colorCode = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
-						bgs.push({ colName : item.type, colorCode : colorCode });
+						bgs.push({ colName : 'list-item.'+item.type, colorCode : colorCode });
 					}
 				});
 				bgs.forEach((item) => {
-					bgCss += '.'+item.colName+'{ background: '+item.colorCode+' }';
+					bgCss += '.'+item.colName+'{ background-color: '+item.colorCode+' }';
 				});
 				types.sort();
 				app.uniqueItems = types;
 				app.itemsBGs = bgCss;
 			})
-			.catch(function (error) {
-			    console.log(error);
+			.catch(function (err) {
+			    console.log(err);
 			});
 		},
-		addCollection: function(){
-			if(!this.newTitle || !this.newDescription || !this.newType){
-				this.error = true;
-			}else{
+		actionCollection: function(action){
+			if(!this.currentTitle || !this.currentDescription || !this.currentType){
+				app.error = true;
+				app.notificationMsg = 'Oops... All fields are required';
+			}else{				
 				axios.post('ajax.php', {
-					request: 'add',
-					name: this.newTitle,
-					description: this.newDescription,
-					type: this.newType
+					request: action,
+					id: this.currentID,
+					name: this.currentTitle,
+					description: this.currentDescription,
+					type: this.currentType
 				})
 				.then(function (response) {
-					app.newTitle = '';
-					app.newDescription = '';
-					app.newType = '';
-					app.error = false;
-					alert(response.data);
+					app.notificationMsg = response.data;
 					app.allCollections();
+					app.currentID = '',
+					app.currentTitle = '',
+					app.currentDescription = '',
+					app.currentType = ''
 				})
-				.catch(function (error) {
-					console.log(error);
+				.catch(function (err) {
+					app.error = true;
+					app.notificationMsg = err;
 				});
 			}
-		},
-		editCollection: function(id){
-			axios.post('ajax.php', {
-			    request: 'edit',
-			    id: this.editID,
-				name: this.editTitle,
-				description: this.editDescription,
-				type: this.editType
-			})
-			.then(function (response) {
-			    app.allCollections();
-			    alert(response.data);
-			})
-			.catch(function (error) {
-			    console.log(error);
-			});
+			app.hideNotification();
 		},
 		removeItem: function(id){
 			axios.post('ajax.php', {
@@ -100,16 +88,23 @@ const app = new Vue({
 			    id: id
 			})
 			.then(function (response) {
+			    app.notificationMsg = response.data;
 			    app.allCollections();
-			    alert(response.data);
+				app.hideNotification();
 			})
-			.catch(function (error) {
-			    console.log(error);
+			.catch(function (err) {
+			    app.error = true;
+				app.notificationMsg = err;
 			});
 		},
 		refreshHead() {
-		   document.getElementById('customStyle').innerHTML = this.css
-	   }
+			document.getElementById('customStyle').innerHTML = this.css;
+		},
+		hideNotification() {
+			setTimeout(function(){
+				app.notificationMsg = '';
+			}, 2000);
+		}
 	},
 	created: function(){
 		this.allCollections();
@@ -122,11 +117,11 @@ const app = new Vue({
 		}
 	},
 	computed: {
-    css() {
-        return this.itemsBGs;
+		css(){
+			return this.itemsBGs;
 		}
 	},
 	mounted() {
-		 setTimeout(() => this.refreshHead(), 1000);
+		 setTimeout(() => this.refreshHead(), 300);
 	}
 });

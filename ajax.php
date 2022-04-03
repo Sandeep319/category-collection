@@ -21,7 +21,7 @@ if($request == 'add'){
 	$description = $data->description;
 	$type = $data->type;
 	mysqli_query($con,"INSERT INTO collection(name,description,type) VALUES('".$name."','".$description."','".$type."')");
-	echo "Collection added";
+	echo "Item added successfully";
 	exit;
 }
 
@@ -34,7 +34,7 @@ if($request == 'edit'){
 	
 	mysqli_query($con,"UPDATE collection SET name='".$name."', description='".$description."', type='".$type."' WHERE id=".$id);
 		 
-	echo "Update record";
+	echo "Item updated successfully";
 	exit;
 }
 
@@ -42,6 +42,6 @@ if($request == 'edit'){
 if($request == 'delete'){
 	$id = $data->id;
 	mysqli_query($con,"DELETE FROM collection WHERE id=".$id);
-	echo "Delete successfully";
+	echo "Item delete successfully";
 	exit;
 }
